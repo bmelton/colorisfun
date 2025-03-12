@@ -8,6 +8,12 @@ struct ContentView: View {
     @State private var tailwindColor: String = "None"
     @State private var isPicking: Bool = false
     
+    @ObservedObject private var copyBufferViewModel: CopyBufferViewModel
+    
+    init(appDelegate: AppDelegate) {
+        self.copyBufferViewModel = CopyBufferViewModel(appDelegate: appDelegate)
+    }
+    
     var body: some View {
         VStack(spacing: 20) {
             Text("Color is fun")
@@ -19,10 +25,10 @@ struct ContentView: View {
                 .padding(.horizontal)
             
             VStack(alignment: .leading, spacing: 10) {
-                ColorInfoRow(label: "Tailwind", value: tailwindColor)
-                ColorInfoRow(label: "HEX", value: hexValue)
-                ColorInfoRow(label: "RGB", value: rgbValue)
-                ColorInfoRow(label: "HSL", value: hslValue)
+                ColorInfoRow(label: "Tailwind", value: tailwindColor, copyBufferViewModel: copyBufferViewModel)
+                ColorInfoRow(label: "HEX", value: hexValue, copyBufferViewModel: copyBufferViewModel)
+                ColorInfoRow(label: "RGB", value: rgbValue, copyBufferViewModel: copyBufferViewModel)
+                ColorInfoRow(label: "HSL", value: hslValue, copyBufferViewModel: copyBufferViewModel)
             }
             .padding(.horizontal)
             
@@ -73,7 +79,7 @@ struct ContentView: View {
         
         // TODO: At some point these should all share a struct
         // HEX value
-        hexValue = String(format: "#%02X%02X%02X", 
+        hexValue = String(format: "#%02X%02X%02X",
                          Int(rgbColor.redComponent * 255),
                          Int(rgbColor.greenComponent * 255),
                          Int(rgbColor.blueComponent * 255))
@@ -85,10 +91,10 @@ struct ContentView: View {
                          Int(rgbColor.blueComponent * 255))
         
         // HSL value
-        let hslColor = rgbToHsl(r: rgbColor.redComponent, 
-                               g: rgbColor.greenComponent, 
+        let hslColor = rgbToHsl(r: rgbColor.redComponent,
+                               g: rgbColor.greenComponent,
                                b: rgbColor.blueComponent)
-        hslValue = String(format: "%d°, %d%%, %d%%", 
+        hslValue = String(format: "%d°, %d%%, %d%%",
                          Int(hslColor.h * 360),
                          Int(hslColor.s * 100),
                          Int(hslColor.l * 100))
@@ -126,20 +132,14 @@ struct ContentView: View {
     }
     
     func findNearestTailwindColor(color: NSColor) -> String {
-        // Define Tailwind colors with their RGB values
-        /*
-        let tailwindColors: [(name: String, r: CGFloat, g: CGFloat, b: CGFloat)] = [
-        ]
-        */
-        
         
         var minDistance = CGFloat.greatestFiniteMagnitude
         var closestColor = "None"
         
         for tailwindColor in TailwindColors.allColors {
             let distance = pow(color.redComponent - tailwindColor.r, 2) +
-                          pow(color.greenComponent - tailwindColor.g, 2) +
-                          pow(color.blueComponent - tailwindColor.b, 2)
+            pow(color.greenComponent - tailwindColor.g, 2) +
+            pow(color.blueComponent - tailwindColor.b, 2)
             
             if distance < minDistance {
                 minDistance = distance
@@ -148,6 +148,25 @@ struct ContentView: View {
         }
         
         return closestColor
+    }
+}
+
+class CopyBufferViewModel: ObservableObject {
+    private var appDelegate: AppDelegate
+
+    init(appDelegate: AppDelegate) {
+        self.appDelegate = appDelegate
+    }
+    
+    func copyToClipboard(value: String) {
+        if appDelegate.getInjectToCopyBuffer() {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(value, forType: .string)
+        }
+    }
+    
+    func getCopyBufferFormat() -> String {
+        return appDelegate.getCopyBufferFormat()
     }
 }
 
@@ -181,6 +200,7 @@ struct ColorPreview: View {
 struct ColorInfoRow: View {
     let label: String
     let value: String
+    @ObservedObject var copyBufferViewModel: CopyBufferViewModel
     
     var body: some View {
         HStack {
@@ -194,6 +214,9 @@ struct ColorInfoRow: View {
             Spacer()
             
             Button(action: {
+                if (copyBufferViewModel.getCopyBufferFormat().lowercased() == label.lowercased()) {
+                    copyBufferViewModel.copyToClipboard(value: value)
+                }
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(value, forType: .string)
             }) {
