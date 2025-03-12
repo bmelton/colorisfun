@@ -1,4 +1,5 @@
 import SwiftUI
+import Cocoa
 
 struct ContentView: View {
     @State private var selectedColor: NSColor = .clear
@@ -70,6 +71,9 @@ struct ContentView: View {
                 
                 // Update color values
                 updateColorValues(color: color)
+                
+                // Inject to copy buffer if enabled
+                copyToBufferIfEnabled()
             }
         }
     }
@@ -149,24 +153,26 @@ struct ContentView: View {
         
         return closestColor
     }
-}
-
-class CopyBufferViewModel: ObservableObject {
-    private var appDelegate: AppDelegate
-
-    init(appDelegate: AppDelegate) {
-        self.appDelegate = appDelegate
-    }
     
-    func copyToClipboard(value: String) {
-        if appDelegate.getInjectToCopyBuffer() {
-            NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(value, forType: .string)
+    func copyToBufferIfEnabled() {
+        if copyBufferViewModel.getInjectToCopyBuffer() {
+            let format = copyBufferViewModel.getCopyBufferFormat()
+            var valueToCopy: String = ""
+
+            switch format {
+            case "Tailwind":
+                valueToCopy = tailwindColor
+            case "Hex":
+                valueToCopy = hexValue
+            case "RGB":
+                valueToCopy = rgbValue
+            case "HSL":
+                valueToCopy = hslValue
+            default:
+                valueToCopy = hexValue // Default to Hex if format is unknown
+            }
+            copyBufferViewModel.copyToClipboard(value: valueToCopy)
         }
-    }
-    
-    func getCopyBufferFormat() -> String {
-        return appDelegate.getCopyBufferFormat()
     }
 }
 

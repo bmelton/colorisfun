@@ -11,6 +11,7 @@
 		1A2B3C4D5E6F7890ABCDEF03 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7890ABCDEF04 /* ContentView.swift */; };
 		1A2B3C4D5E6F7890ABCDEF05 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7890ABCDEF06 /* main.swift */; };
 		7BF04A012D819475008A995A /* TailwindColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF04A002D819475008A995A /* TailwindColors.swift */; };
+		7BF04A032D819D81008A995A /* CopyBufferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF04A022D819D81008A995A /* CopyBufferViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +21,7 @@
 		1A2B3C4D5E6F7890ABCDEF07 /* Colorisfun.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Colorisfun.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A2B3C4D5E6F7890ABCDEF09 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7BF04A002D819475008A995A /* TailwindColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TailwindColors.swift; sourceTree = "<group>"; };
+		7BF04A022D819D81008A995A /* CopyBufferViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyBufferViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +46,7 @@
 		1A2B3C4D5E6F7890ABCDEF0C /* Colorisfun */ = {
 			isa = PBXGroup;
 			children = (
+				7BF04A022D819D81008A995A /* CopyBufferViewModel.swift */,
 				7BF04A002D819475008A995A /* TailwindColors.swift */,
 				1A2B3C4D5E6F7890ABCDEF02 /* AppDelegate.swift */,
 				1A2B3C4D5E6F7890ABCDEF04 /* ContentView.swift */,
@@ -128,6 +131,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7BF04A032D819D81008A995A /* CopyBufferViewModel.swift in Sources */,
 				1A2B3C4D5E6F7890ABCDEF03 /* ContentView.swift in Sources */,
 				7BF04A012D819475008A995A /* TailwindColors.swift in Sources */,
 				1A2B3C4D5E6F7890ABCDEF01 /* AppDelegate.swift in Sources */,
