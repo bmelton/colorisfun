@@ -8,11 +8,19 @@ struct ContentView: View {
     @State private var hslValue: String = "0°, 0%, 0%"
     @State private var tailwindColor: String = "None"
     @State private var isPicking: Bool = false
-    
+    @State private var showPopoverTemporarily: Bool = false
+
     @ObservedObject private var copyBufferViewModel: CopyBufferViewModel
     
-    init(appDelegate: AppDelegate) {
+    var popover: NSPopover
+    
+    //Add status bar item
+    var statusBarItem: NSStatusItem
+    
+    init(appDelegate: AppDelegate, popover: NSPopover, statusBarItem: NSStatusItem) {
         self.copyBufferViewModel = CopyBufferViewModel(appDelegate: appDelegate)
+        self.popover = popover
+        self.statusBarItem = statusBarItem
     }
     
     var body: some View {
@@ -38,13 +46,26 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity)
                     .padding(8)
             }
-            .buttonStyle(PlainButtonStyle()) // This removes the default button styling
+            .buttonStyle(PlainButtonStyle())
             .background(Color.accentColor)
             .foregroundColor(.white)
             .cornerRadius(8)
             .padding(.horizontal)
             .padding(.bottom)        }
         .frame(width: 300)
+        .onChange(of: showPopoverTemporarily, perform: { shouldShow in
+            if shouldShow {
+                //show the popover
+                if let button = statusBarItem.button {
+                  popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    //Close the popover after 3 seconds
+                    showPopoverTemporarily = false
+                    popover.performClose(nil)
+                }
+            }
+        })
     }
     
     func startColorPicking() {
@@ -74,6 +95,9 @@ struct ContentView: View {
                 
                 // Inject to copy buffer if enabled
                 copyToBufferIfEnabled()
+                
+                // Show the popover temporarily
+                showPopoverTemporarily = true
             }
         }
     }

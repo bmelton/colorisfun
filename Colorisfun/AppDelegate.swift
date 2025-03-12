@@ -50,7 +50,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         popover = NSPopover()
         popover.contentSize = NSSize(width: 300, height: 400)
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: ContentView(appDelegate: self))
+        // Now pass the popover
+        // pass the statusbar item
+        popover.contentViewController = NSHostingController(rootView: ContentView(appDelegate: self, popover: popover, statusBarItem: statusBarItem))
     }
 
     @objc func togglePopover() {
