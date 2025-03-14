@@ -26,12 +26,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusBarItem.button {
-            button.image = NSImage(systemSymbolName: "eyedropper", accessibilityDescription: "Color is fun")
+            if let image = NSImage(named: "starlogo-pink") { // Load your custom image
+                image.size = NSSize(width: 18, height: 18) // Adjust size as needed
+                image.isTemplate = true
+                button.image = image
+            } else {
+                print("Error: Failed to load starlogo-pink image.")
+                button.image = NSImage(systemSymbolName: "eyedropper", accessibilityDescription: "Color is fun")//fallback to eyedropper if image fails to load.
+            }
+
             button.target = self
             button.action = #selector(statusBarButtonClicked(sender:))
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
     }
+
     
     @objc func statusBarButtonClicked(sender: NSStatusBarButton) {
         guard let event = NSApp.currentEvent else { return }
@@ -96,7 +105,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         formatItem.submenu = formatMenu
         statusMenu.addItem(formatItem)
 
+        // Add the Quit menu item
+        statusMenu.addItem(NSMenuItem.separator()) // Add a separator for better visual separation
+        let quitItem = NSMenuItem(title: "Quit Color is fun", action: #selector(quitApp), keyEquivalent: "q") // Add 'q' key equivalent
+        quitItem.target = self
+        statusMenu.addItem(quitItem)
+
+        
         updateMenuState()
+    }
+    
+    @objc func quitApp() {
+        NSApplication.shared.terminate(self)
     }
 
     @objc func toggleInjectToCopyBuffer() {

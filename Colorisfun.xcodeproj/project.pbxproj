@@ -10,6 +10,7 @@
 		1A2B3C4D5E6F7890ABCDEF01 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7890ABCDEF02 /* AppDelegate.swift */; };
 		1A2B3C4D5E6F7890ABCDEF03 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7890ABCDEF04 /* ContentView.swift */; };
 		1A2B3C4D5E6F7890ABCDEF05 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7890ABCDEF06 /* main.swift */; };
+		7B4D541B2D84AAD9006447F4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B4D541A2D84AAD9006447F4 /* Assets.xcassets */; };
 		7BF04A012D819475008A995A /* TailwindColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF04A002D819475008A995A /* TailwindColors.swift */; };
 		7BF04A032D819D81008A995A /* CopyBufferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF04A022D819D81008A995A /* CopyBufferViewModel.swift */; };
 /* End PBXBuildFile section */
@@ -20,6 +21,7 @@
 		1A2B3C4D5E6F7890ABCDEF06 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F7890ABCDEF07 /* Colorisfun.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Colorisfun.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A2B3C4D5E6F7890ABCDEF09 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7B4D541A2D84AAD9006447F4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7BF04A002D819475008A995A /* TailwindColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TailwindColors.swift; sourceTree = "<group>"; };
 		7BF04A022D819D81008A995A /* CopyBufferViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyBufferViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -59,6 +61,7 @@
 		1A2B3C4D5E6F7890ABCDEF0D = {
 			isa = PBXGroup;
 			children = (
+				7B4D541A2D84AAD9006447F4 /* Assets.xcassets */,
 				1A2B3C4D5E6F7890ABCDEF0C /* Colorisfun */,
 				1A2B3C4D5E6F7890ABCDEF0B /* Products */,
 			);
@@ -122,6 +125,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7B4D541B2D84AAD9006447F4 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

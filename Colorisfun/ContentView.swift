@@ -11,28 +11,26 @@ struct ContentView: View {
     @State private var showPopoverTemporarily: Bool = false
 
     @ObservedObject private var copyBufferViewModel: CopyBufferViewModel
-    
+
     var popover: NSPopover
-    
-    //Add status bar item
     var statusBarItem: NSStatusItem
-    
+
     init(appDelegate: AppDelegate, popover: NSPopover, statusBarItem: NSStatusItem) {
         self.copyBufferViewModel = CopyBufferViewModel(appDelegate: appDelegate)
         self.popover = popover
         self.statusBarItem = statusBarItem
     }
-    
+
     var body: some View {
         VStack(spacing: 20) {
             Text("Color is fun")
                 .font(.headline)
                 .padding(.top)
-            
+
             ColorPreview(color: selectedColor)
                 .frame(height: 80)
                 .padding(.horizontal)
-            
+
             VStack(alignment: .leading, spacing: 10) {
                 ColorInfoRow(label: "Tailwind", value: tailwindColor, copyBufferViewModel: copyBufferViewModel)
                 ColorInfoRow(label: "HEX", value: hexValue, copyBufferViewModel: copyBufferViewModel)
@@ -40,9 +38,9 @@ struct ContentView: View {
                 ColorInfoRow(label: "HSL", value: hslValue, copyBufferViewModel: copyBufferViewModel)
             }
             .padding(.horizontal)
-            
+
             Button(action: startColorPicking) {
-                Label("Pick Color", systemImage: "eyedropper")
+                Label("Pick Color", image: "starlogo-white") // Replace systemImage
                     .frame(maxWidth: .infinity)
                     .padding(8)
             }
@@ -51,57 +49,48 @@ struct ContentView: View {
             .foregroundColor(.white)
             .cornerRadius(8)
             .padding(.horizontal)
-            .padding(.bottom)        }
+            .padding(.bottom)
+        }
         .frame(width: 300)
         .onChange(of: showPopoverTemporarily, perform: { shouldShow in
             if shouldShow {
-                //show the popover
                 if let button = statusBarItem.button {
-                  popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+                    popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    //Close the popover after 3 seconds
                     showPopoverTemporarily = false
                     popover.performClose(nil)
                 }
             }
         })
     }
-    
+
     func startColorPicking() {
         isPicking = true
-        
-        // Hide the app temporarily
+
         if let window = NSApplication.shared.windows.first {
             window.orderOut(nil)
         }
-        
-        // Small delay to ensure the window is hidden
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             let colorSampler = NSColorSampler()
             colorSampler.show { color in
-                // Show the app again
                 if let window = NSApplication.shared.windows.first {
                     window.makeKeyAndOrderFront(nil)
                 }
-                
+
                 isPicking = false
-                
+
                 guard let color = color else { return }
                 selectedColor = color
-                
-                // Update color values
+
                 updateColorValues(color: color)
-                
-                // Inject to copy buffer if enabled
                 copyToBufferIfEnabled()
-                
-                // Show the popover temporarily
                 showPopoverTemporarily = true
             }
         }
     }
-    
+
     func updateColorValues(color: NSColor) {
         let rgbColor = color.usingColorSpace(.sRGB)!
         
