@@ -6,10 +6,12 @@
       "scale" : "1x"
     },
     {
+      "filename" : "starlogo-white-38.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "starlogo-white-57.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
