@@ -1,21 +1,25 @@
 {
   "images" : [
     {
+      "filename" : "starlogo-pink-16.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "16x16"
     },
     {
+      "filename" : "starlogo-pink-32.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "16x16"
     },
     {
+      "filename" : "starlogo-pink-32 1.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "32x32"
     },
     {
+      "filename" : "starlogo-pink-64.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "32x32"
