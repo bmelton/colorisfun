@@ -201,8 +201,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         injectItem.state = injectToCopyBuffer ? .on : .off
         statusMenu.addItem(injectItem)
         
-        // Rest of your existing menu setup...
-        
+        let formatItem = NSMenuItem(title: "Copy Buffer Format", action: nil, keyEquivalent: "")
+         let formatMenu = NSMenu(title: "Copy Buffer Format")
+ 
+         let tailwindItem = NSMenuItem(title: "Tailwind", action: #selector(selectCopyBufferFormat), keyEquivalent: "")
+         tailwindItem.representedObject = "Tailwind"
+         formatMenu.addItem(tailwindItem)
+ 
+         let hexItem = NSMenuItem(title: "Hex", action: #selector(selectCopyBufferFormat), keyEquivalent: "")
+         hexItem.representedObject = "Hex"
+         formatMenu.addItem(hexItem)
+ 
+         let rgbItem = NSMenuItem(title: "RGB", action: #selector(selectCopyBufferFormat), keyEquivalent: "")
+         rgbItem.representedObject = "RGB"
+         formatMenu.addItem(rgbItem)
+ 
+         let hslItem = NSMenuItem(title: "HSL", action: #selector(selectCopyBufferFormat), keyEquivalent: "")
+         hslItem.representedObject = "HSL"
+         formatMenu.addItem(hslItem)
+ 
+         formatItem.submenu = formatMenu
+         statusMenu.addItem(formatItem)
+ 
+         // Add the Quit menu item
+         statusMenu.addItem(NSMenuItem.separator()) // Add a separator for better visual separation
+
         // Add restore purchases option before quit
         statusMenu.addItem(NSMenuItem.separator())
         let restoreItem = NSMenuItem(title: "Restore Purchases", action: #selector(restorePurchases), keyEquivalent: "")
@@ -274,28 +297,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func updateMenuState() {
-        
-        if let injectItem = statusMenu.items.first {
+        // Find the "Inject selection to copy buffer" menu item
+        if let injectItem = statusMenu.items.first(where: { $0.title == "Inject selection to copy buffer" }) {
             injectItem.state = injectToCopyBuffer ? .on : .off
         }
         
-        // Get the formatItem (second item in the menu)
-        guard statusMenu.items.count >= 2 else {
-            return
-        }
-        
-        let formatItem = statusMenu.items[1]
-        guard let formatMenu = formatItem.submenu else {
-            return
-        }
-        
-        formatItem.isEnabled = injectToCopyBuffer
-        
-        // Update checkmarks on format submenu items
-        for item in formatMenu.items {
-            if let format = item.representedObject as? String {
-                item.state = (format == copyBufferFormat) ? .on : .off
-                item.isEnabled = injectToCopyBuffer
+        // Find the "Copy Buffer Format" menu item
+        if let formatItem = statusMenu.items.first(where: { $0.title == "Copy Buffer Format" }),
+           let formatMenu = formatItem.submenu {
+            
+            formatItem.isEnabled = injectToCopyBuffer
+            
+            // Update checkmarks on format submenu items
+            for item in formatMenu.items {
+                if let format = item.representedObject as? String {
+                    item.state = (format == copyBufferFormat) ? .on : .off
+                    item.isEnabled = injectToCopyBuffer
+                }
             }
         }
     }

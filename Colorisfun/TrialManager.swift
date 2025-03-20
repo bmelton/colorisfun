@@ -25,10 +25,11 @@ class TrialManager {
         // Check if trial is still valid
         return isTrialValid
     }
+
     
     // Check if the trial period is still valid
     var isTrialValid: Bool {
-        return false
+        // return false
         guard let firstLaunchDate = UserDefaults.standard.object(forKey: firstLaunchDateKey) as? Date else {
             return false
         }
