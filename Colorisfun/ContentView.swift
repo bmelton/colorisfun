@@ -22,34 +22,51 @@ struct ContentView: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Color is fun")
-                .font(.headline)
-                .padding(.top)
+        ZStack {
+            VStack(spacing: 20) {
+                Text("Color is fun")
+                    .font(.headline)
+                    .padding(.top)
 
-            ColorPreview(color: selectedColor)
-                .frame(height: 80)
+                ColorPreview(color: selectedColor)
+                    .frame(height: 80)
+                    .padding(.horizontal)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    ColorInfoRow(label: "Tailwind", value: tailwindColor, copyBufferViewModel: copyBufferViewModel)
+                    ColorInfoRow(label: "HEX", value: hexValue, copyBufferViewModel: copyBufferViewModel)
+                    ColorInfoRow(label: "RGB", value: rgbValue, copyBufferViewModel: copyBufferViewModel)
+                    ColorInfoRow(label: "HSL", value: hslValue, copyBufferViewModel: copyBufferViewModel)
+                }
                 .padding(.horizontal)
 
-            VStack(alignment: .leading, spacing: 10) {
-                ColorInfoRow(label: "Tailwind", value: tailwindColor, copyBufferViewModel: copyBufferViewModel)
-                ColorInfoRow(label: "HEX", value: hexValue, copyBufferViewModel: copyBufferViewModel)
-                ColorInfoRow(label: "RGB", value: rgbValue, copyBufferViewModel: copyBufferViewModel)
-                ColorInfoRow(label: "HSL", value: hslValue, copyBufferViewModel: copyBufferViewModel)
+                Button(action: startColorPicking) {
+                    Label("Pick Color", image: "starlogo-white") // Replace systemImage
+                        .frame(maxWidth: .infinity)
+                        .padding(8)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .background(Color.accentColor)
+                .foregroundColor(.white)
+                .cornerRadius(8)
+                .padding(.horizontal)
+                .padding(.bottom)
             }
-            .padding(.horizontal)
-
-            Button(action: startColorPicking) {
-                Label("Pick Color", image: "starlogo-white") // Replace systemImage
-                    .frame(maxWidth: .infinity)
-                    .padding(8)
+            
+            // Toast notification for automatic copy
+            if copyFeedbackVisible {
+                VStack {
+                    Spacer()
+                    Text("\(copiedFormat) copied to clipboard")
+                        .font(.footnote)
+                        .padding(8)
+                        .background(Color.black.opacity(0.7))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .padding(.bottom, 10)
+                }
             }
-            .buttonStyle(PlainButtonStyle())
-            .background(Color.accentColor)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            .padding(.horizontal)
-            .padding(.bottom)
         }
         .frame(width: 300)
         .onChange(of: showPopoverTemporarily, perform: { shouldShow in
@@ -167,6 +184,9 @@ struct ContentView: View {
         return closestColor
     }
     
+    @State private var copyFeedbackVisible = false
+    @State private var copiedFormat = ""
+    
     func copyToBufferIfEnabled() {
         if copyBufferViewModel.getInjectToCopyBuffer() {
             let format = copyBufferViewModel.getCopyBufferFormat()
@@ -185,6 +205,21 @@ struct ContentView: View {
                 valueToCopy = hexValue // Default to Hex if format is unknown
             }
             copyBufferViewModel.copyToClipboard(value: valueToCopy)
+            
+            // Store the copied format for the toast message
+            copiedFormat = format
+            
+            // Show a toast message
+            withAnimation {
+                copyFeedbackVisible = true
+            }
+            
+            // Hide the toast after 2 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                withAnimation {
+                    copyFeedbackVisible = false
+                }
+            }
         }
     }
 }
@@ -220,6 +255,7 @@ struct ColorInfoRow: View {
     let label: String
     let value: String
     @ObservedObject var copyBufferViewModel: CopyBufferViewModel
+    @State private var showCopiedFeedback = false
     
     var body: some View {
         HStack {
@@ -238,9 +274,29 @@ struct ColorInfoRow: View {
                 }
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(value, forType: .string)
+                
+                // Show feedback
+                withAnimation {
+                    showCopiedFeedback = true
+                }
+                
+                // Hide feedback after 1 second
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    withAnimation {
+                        showCopiedFeedback = false
+                    }
+                }
             }) {
-                Image(systemName: "doc.on.doc")
-                    .font(.caption)
+                Group {
+                    if showCopiedFeedback {
+                        Image(systemName: "checkmark")
+                            .foregroundColor(.green)
+                            .transition(.opacity)
+                    } else {
+                        Image(systemName: "doc.on.doc")
+                    }
+                }
+                .font(.caption)
             }
             .buttonStyle(.plain)
         }
