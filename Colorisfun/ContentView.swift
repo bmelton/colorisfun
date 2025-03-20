@@ -9,6 +9,8 @@ struct ContentView: View {
     @State private var tailwindColor: String = "None"
     @State private var isPicking: Bool = false
     @State private var showPopoverTemporarily: Bool = false
+    @State private var copyFeedbackVisible: Bool = false
+    @State private var copiedFormat: String = ""
 
     @ObservedObject private var copyBufferViewModel: CopyBufferViewModel
 
@@ -56,7 +58,6 @@ struct ContentView: View {
             // Toast notification for automatic copy
             if copyFeedbackVisible {
                 VStack {
-                    Spacer()
                     Text("\(copiedFormat) copied to clipboard")
                         .font(.footnote)
                         .padding(8)
@@ -80,19 +81,40 @@ struct ContentView: View {
                 }
             }
         })
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("ColorValueCopied"))) { notification in
+            if let format = notification.userInfo?["format"] as? String {
+                copiedFormat = format
+                
+                // Show toast notification
+                withAnimation {
+                    copyFeedbackVisible = true
+                }
+                
+                // Hide after 2 seconds
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation {
+                        copyFeedbackVisible = false
+                    }
+                }
+            }
+        }
     }
 
-    func startColorPicking() {
-        isPicking = true
+func startColorPicking() {
+    isPicking = true
 
-        if let window = NSApplication.shared.windows.first {
-            window.orderOut(nil)
-        }
-
+    if let window = NSApplication.shared.windows.first {
+        // Move the window off-screen
+        let originalFrame = window.frame
+        window.setFrameOrigin(NSPoint(x: -window.frame.width, y: -window.frame.height))
+        window.orderOut(nil) // Hide the window
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             let colorSampler = NSColorSampler()
             colorSampler.show { color in
                 if let window = NSApplication.shared.windows.first {
+                    // Move the window back to its original position
+                    window.setFrame(originalFrame, display: true)
                     window.makeKeyAndOrderFront(nil)
                 }
 
@@ -107,6 +129,8 @@ struct ContentView: View {
             }
         }
     }
+}
+
 
     func updateColorValues(color: NSColor) {
         let rgbColor = color.usingColorSpace(.sRGB)!
@@ -184,9 +208,6 @@ struct ContentView: View {
         return closestColor
     }
     
-    @State private var copyFeedbackVisible = false
-    @State private var copiedFormat = ""
-    
     func copyToBufferIfEnabled() {
         if copyBufferViewModel.getInjectToCopyBuffer() {
             let format = copyBufferViewModel.getCopyBufferFormat()
@@ -206,20 +227,12 @@ struct ContentView: View {
             }
             copyBufferViewModel.copyToClipboard(value: valueToCopy)
             
-            // Store the copied format for the toast message
-            copiedFormat = format
-            
-            // Show a toast message
-            withAnimation {
-                copyFeedbackVisible = true
-            }
-            
-            // Hide the toast after 2 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                withAnimation {
-                    copyFeedbackVisible = false
-                }
-            }
+            // Post notification for copy event
+            NotificationCenter.default.post(
+                name: Notification.Name("ColorValueCopied"),
+                object: nil,
+                userInfo: ["format": format]
+            )
         }
     }
 }
@@ -274,6 +287,13 @@ struct ColorInfoRow: View {
                 }
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(value, forType: .string)
+                
+                // Post notification for copy event
+                NotificationCenter.default.post(
+                    name: Notification.Name("ColorValueCopied"),
+                    object: nil,
+                    userInfo: ["format": label]
+                )
                 
                 // Show feedback
                 withAnimation {
