@@ -137,18 +137,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             injectItem.state = injectToCopyBuffer ? .on : .off
         }
         
-        guard let formatItem = statusMenu.items.last, let formatMenu = formatItem.submenu else {
+        // Get the formatItem (second item in the menu)
+        guard statusMenu.items.count >= 2 else {
             return
         }
         
-        //formatItem.isHidden = !injectToCopyBuffer  //Remove this line
-
-        formatItem.isEnabled = injectToCopyBuffer // Add this line
-
+        let formatItem = statusMenu.items[1]
+        guard let formatMenu = formatItem.submenu else {
+            return
+        }
+        
+        formatItem.isEnabled = injectToCopyBuffer
+        
+        // Update checkmarks on format submenu items
         for item in formatMenu.items {
             if let format = item.representedObject as? String {
                 item.state = (format == copyBufferFormat) ? .on : .off
-                item.isEnabled = injectToCopyBuffer // Add this line
+                item.isEnabled = injectToCopyBuffer
             }
         }
     }
