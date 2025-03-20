@@ -28,6 +28,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func setupStatusBarItem() {
         statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
+        NSApplication.shared.setActivationPolicy(.accessory)
+
         if let button = statusBarItem.button {
             if let image = NSImage(named: "starlogo-pink") { // Load your custom image
                 image.size = NSSize(width: 18, height: 18) // Adjust size as needed
@@ -325,5 +327,5 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func getInjectToCopyBuffer() -> Bool {
         return injectToCopyBuffer
     }
-    
 }
+

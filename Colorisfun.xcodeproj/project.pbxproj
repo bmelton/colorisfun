@@ -18,6 +18,7 @@
 		EBA718CD2D8BACC6006E167C /* PurchaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA718CC2D8BACC3006E167C /* PurchaseView.swift */; };
 		EBA718CF2D8BB905006E167C /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = EBA718CE2D8BB905006E167C /* Configuration.storekit */; };
 		EBA718D12D8BB9E5006E167C /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = EBA718D02D8BB9AA006E167C /* Configuration.storekit */; };
+		EBA718D32D8CDF90006E167C /* ColorPickerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA718D22D8CDF89006E167C /* ColorPickerManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		EBA718CC2D8BACC3006E167C /* PurchaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseView.swift; sourceTree = "<group>"; };
 		EBA718CE2D8BB905006E167C /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		EBA718D02D8BB9AA006E167C /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; name = Configuration.storekit; path = Colorisfun/Configuration.storekit; sourceTree = "<group>"; };
+		EBA718D22D8CDF89006E167C /* ColorPickerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPickerManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +61,7 @@
 		1A2B3C4D5E6F7890ABCDEF0C /* Colorisfun */ = {
 			isa = PBXGroup;
 			children = (
+				EBA718D22D8CDF89006E167C /* ColorPickerManager.swift */,
 				EBA718CC2D8BACC3006E167C /* PurchaseView.swift */,
 				EBA718CA2D8BAC93006E167C /* StoreManager.swift */,
 				EBA718C82D8BAB65006E167C /* TrialManager.swift */,
@@ -162,6 +165,7 @@
 				EBA718C92D8BAB67006E167C /* TrialManager.swift in Sources */,
 				7BF04A012D819475008A995A /* TailwindColors.swift in Sources */,
 				1A2B3C4D5E6F7890ABCDEF01 /* AppDelegate.swift in Sources */,
+				EBA718D32D8CDF90006E167C /* ColorPickerManager.swift in Sources */,
 				1A2B3C4D5E6F7890ABCDEF05 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

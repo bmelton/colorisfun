@@ -1,19 +1,50 @@
 import SwiftUI
 import Cocoa
 
+extension NSColorSampler {
+    static func pickColor(completion: @escaping (NSColor?) -> Void) {
+        // Get reference to the window we want to hide
+        var windowToRestore: NSWindow?
+        if let window = NSApplication.shared.windows.first {
+            windowToRestore = window
+            // Hide the window before starting the color picker
+            window.orderOut(nil)
+        }
+        
+        // Create a new background thread to handle color picking
+        DispatchQueue.global(qos: .userInitiated).async {
+            let sampler = NSColorSampler()
+            
+            // Call back to the main thread when color is picked
+            sampler.show { color in
+                DispatchQueue.main.async {
+                    // Restore the window
+                    if let window = windowToRestore {
+                        window.makeKeyAndOrderFront(nil)
+                    }
+                    
+                    completion(color)
+                }
+            }
+        }
+    }
+}
+
 struct ContentView: View {
     @State private var selectedColor: NSColor = .clear
     @State private var hexValue: String = "#000000"
     @State private var rgbValue: String = "0, 0, 0"
     @State private var hslValue: String = "0°, 0%, 0%"
     @State private var tailwindColor: String = "None"
-    @State private var isPicking: Bool = false
     @State private var showPopoverTemporarily: Bool = false
     @State private var copyFeedbackVisible: Bool = false
     @State private var copiedFormat: String = ""
-
+  
+    // Create a state object for the manager
+    @StateObject private var colorPickerManager: ColorPickerManager
+    
     @ObservedObject private var copyBufferViewModel: CopyBufferViewModel
-
+    
     var popover: NSPopover
     var statusBarItem: NSStatusItem
 
@@ -21,6 +52,9 @@ struct ContentView: View {
         self.copyBufferViewModel = CopyBufferViewModel(appDelegate: appDelegate)
         self.popover = popover
         self.statusBarItem = statusBarItem
+        
+        // Initialize the StateObject using _StateObject syntax
+        _colorPickerManager = StateObject(wrappedValue: ColorPickerManager(popover: popover, statusBarItem: statusBarItem))
     }
 
     var body: some View {
@@ -29,11 +63,11 @@ struct ContentView: View {
                 Text("Color is fun")
                     .font(.headline)
                     .padding(.top)
-
+                
                 ColorPreview(color: selectedColor)
                     .frame(height: 80)
                     .padding(.horizontal)
-
+                
                 VStack(alignment: .leading, spacing: 10) {
                     ColorInfoRow(label: "Tailwind", value: tailwindColor, copyBufferViewModel: copyBufferViewModel)
                     ColorInfoRow(label: "HEX", value: hexValue, copyBufferViewModel: copyBufferViewModel)
@@ -41,7 +75,7 @@ struct ContentView: View {
                     ColorInfoRow(label: "HSL", value: hslValue, copyBufferViewModel: copyBufferViewModel)
                 }
                 .padding(.horizontal)
-
+                
                 Button(action: startColorPicking) {
                     Label("Pick Color", image: "starlogo-white") // Replace systemImage
                         .frame(maxWidth: .infinity)
@@ -100,37 +134,50 @@ struct ContentView: View {
         }
     }
 
-func startColorPicking() {
-    isPicking = true
-
-    if let window = NSApplication.shared.windows.first {
-        // Move the window off-screen
-        let originalFrame = window.frame
-        window.setFrameOrigin(NSPoint(x: -window.frame.width, y: -window.frame.height))
-        window.orderOut(nil) // Hide the window
+    /*
+    func startColorPicking() {
+        isPicking = true
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            let colorSampler = NSColorSampler()
-            colorSampler.show { color in
-                if let window = NSApplication.shared.windows.first {
-                    // Move the window back to its original position
-                    window.setFrame(originalFrame, display: true)
-                    window.makeKeyAndOrderFront(nil)
+        if let window = NSApplication.shared.windows.first {
+            // Move the window off-screen
+            let originalFrame = window.frame
+            window.setFrameOrigin(NSPoint(x: -window.frame.width, y: -window.frame.height))
+            window.orderOut(nil)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                let colorSampler = NSColorSampler()
+                colorSampler.show { color in
+                    if let window = NSApplication.shared.windows.first {
+                        // Move the window back to its original position
+                        window.setFrame(originalFrame, display: true)
+                        window.makeKeyAndOrderFront(nil)
+                    }
+
+                    isPicking = false
+
+                    guard let color = color else { return }
+                    selectedColor = color
+
+                    updateColorValues(color: color)
+                    copyToBufferIfEnabled()
+                    showPopoverTemporarily = true
                 }
-
-                isPicking = false
-
-                guard let color = color else { return }
-                selectedColor = color
-
-                updateColorValues(color: color)
-                copyToBufferIfEnabled()
-                showPopoverTemporarily = true
             }
         }
     }
-}
-
+    */
+    
+    // In your ContentView struct:
+    func startColorPicking() {
+        // Use the manager to handle everything
+        colorPickerManager.pickColor { newColor in
+            // This is a non-mutating callback that receives the color
+            selectedColor = newColor
+            updateColorValues(color: newColor)
+            copyToBufferIfEnabled()
+            showPopoverTemporarily = true
+        }
+    }
 
     func updateColorValues(color: NSColor) {
         let rgbColor = color.usingColorSpace(.sRGB)!
@@ -321,4 +368,6 @@ struct ColorInfoRow: View {
             .buttonStyle(.plain)
         }
     }
+    
 }
+
