@@ -1,6 +1,5 @@
 import SwiftUI
 import Cocoa
-import StoreKit
 
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
@@ -71,10 +70,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } else if TrialManager.shared.isTrialValid {
             // In trial mode - show notification
             let daysLeft = TrialManager.shared.daysRemaining
-            let notification = NSUserNotification()
-            notification.title = "Color is fun - Trial Mode"
-            notification.informativeText = "You have \(daysLeft) days remaining in your trial."
-            NSUserNotificationCenter.default.deliver(notification)
+            StoreManager.shared.showNotification(title: "Color is fun - Trial Mode",
+                                                 body: "You have \(daysLeft) days remaining in your trial.")
         }
         
         // Setup notification observer for purchase completion
@@ -89,77 +86,55 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func disableAppFunctionality() {
         // If user can still access menu bar, disable key features
         injectToCopyBuffer = false
-        
-        // If you have menu items that should be disabled, add:
-        // let disabledItems = ["Item name 1", "Item name 2"]
-        // for item in statusMenu?.items ?? [] {
-        //     if disabledItems.contains(item.title) {
-        //         item.isEnabled = false
-        //     }
-        // }
     }
-    
-    // Enable full functionality after purchase
+
+    // Rebuild menu to show purchased status (StoreManager already notifies the user)
     @objc func purchaseCompleted() {
-        // Re-enable functionality
-        enableFullFunctionality()
-        
-        // Notify user
-        let notification = NSUserNotification()
-        notification.title = "Purchase Successful"
-        notification.informativeText = "Thank you for purchasing Color is fun! All features have been unlocked."
-        NSUserNotificationCenter.default.deliver(notification)
-        
-        // Rebuild menu to show purchased status
         setupStatusMenu()
     }
 
-    func enableFullFunctionality() {
-        // Reset any disabled features here
-        // Example: re-enable menu items that were disabled
-    }
-    
-    func menuWillOpen(_ menu: NSMenu) {
-        // First remove any existing trial/purchase items (the first few items)
-        while statusMenu.items.count > 0 &&
-              (statusMenu.items[0].title.contains("Trial") ||
-               statusMenu.items[0].title.contains("Purchase") ||
-               statusMenu.items[0].title.contains("Full Version")) {
-            statusMenu.removeItem(at: 0)
-        }
-        
-        // Remove first separator if it exists
-        if statusMenu.items.count > 0 && statusMenu.items[0].isSeparatorItem {
-            statusMenu.removeItem(at: 0)
-        }
-        
-        // Re-add the trial/purchase status items at the top
+    // Tag identifying the trial/purchase header items so menuWillOpen can replace them
+    private static let trialItemTag = 999
+
+    // Builds the trial/purchase status items (plus trailing separator) for the top of the menu
+    private func trialStatusItems() -> [NSMenuItem] {
+        var items: [NSMenuItem] = []
+
         if TrialManager.shared.isTrialValid {
-            let daysLeft = TrialManager.shared.daysRemaining
-            let trialItem = NSMenuItem(title: "Trial: \(daysLeft) days remaining", action: nil, keyEquivalent: "")
+            let trialItem = NSMenuItem(title: "Trial: \(TrialManager.shared.daysRemaining) days remaining", action: nil, keyEquivalent: "")
             trialItem.isEnabled = false
-            statusMenu.insertItem(trialItem, at: 0)
-            
-            let purchaseItem = NSMenuItem(title: "Purchase Full Version", action: #selector(purchaseFullVersion), keyEquivalent: "")
-            statusMenu.insertItem(purchaseItem, at: 1)
+            items.append(trialItem)
+
+            items.append(NSMenuItem(title: "Purchase Full Version", action: #selector(purchaseFullVersion), keyEquivalent: ""))
         } else if UserDefaults.standard.bool(forKey: "hasPurchased") {
             let purchasedItem = NSMenuItem(title: "✓ Full Version", action: nil, keyEquivalent: "")
             purchasedItem.isEnabled = false
-            statusMenu.insertItem(purchasedItem, at: 0)
+            items.append(purchasedItem)
         } else {
             let expiredItem = NSMenuItem(title: "Trial Expired", action: nil, keyEquivalent: "")
             expiredItem.isEnabled = false
-            statusMenu.insertItem(expiredItem, at: 0)
-            
+            items.append(expiredItem)
+
             let purchaseItem = NSMenuItem(title: "Purchase Full Version", action: #selector(purchaseFullVersion), keyEquivalent: "")
             purchaseItem.attributedTitle = NSAttributedString(string: "Purchase Full Version",
                                                            attributes: [NSAttributedString.Key.font: NSFont.boldSystemFont(ofSize: 13)])
-            statusMenu.insertItem(purchaseItem, at: 1)
+            items.append(purchaseItem)
         }
-        
-        statusMenu.insertItem(NSMenuItem.separator(), at: 2)
-        
-        // Update other menu items state
+
+        items.append(NSMenuItem.separator())
+        items.forEach { $0.tag = Self.trialItemTag }
+        return items
+    }
+
+    func menuWillOpen(_ menu: NSMenu) {
+        // Replace the trial/purchase header with current status
+        while let first = statusMenu.items.first, first.tag == Self.trialItemTag {
+            statusMenu.removeItem(first)
+        }
+        for (index, item) in trialStatusItems().enumerated() {
+            statusMenu.insertItem(item, at: index)
+        }
+
         updateMenuState()
     }
 
@@ -167,38 +142,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func setupStatusMenu() {
         statusMenu = NSMenu(title: "Colorisfun Menu")
         statusMenu.delegate = self
-        
-        // Add trial/purchase status at the top of menu
-        if TrialManager.shared.isTrialValid {
-            // Show trial status with days remaining
-            let daysLeft = TrialManager.shared.daysRemaining
-            let trialItem = NSMenuItem(title: "Trial: \(daysLeft) days remaining", action: nil, keyEquivalent: "")
-            trialItem.isEnabled = false
-            statusMenu.addItem(trialItem)
-            
-            // Add purchase option
-            let purchaseItem = NSMenuItem(title: "Purchase Full Version", action: #selector(purchaseFullVersion), keyEquivalent: "")
-            statusMenu.addItem(purchaseItem)
-        } else if UserDefaults.standard.bool(forKey: "hasPurchased") {
-            // Show purchased status
-            let purchasedItem = NSMenuItem(title: "✓ Full Version", action: nil, keyEquivalent: "")
-            purchasedItem.isEnabled = false
-            statusMenu.addItem(purchasedItem)
-        } else {
-            // Trial expired - show prominent purchase option
-            let expiredItem = NSMenuItem(title: "Trial Expired", action: nil, keyEquivalent: "")
-            expiredItem.isEnabled = false
-            statusMenu.addItem(expiredItem)
-            
-            let purchaseItem = NSMenuItem(title: "Purchase Full Version", action: #selector(purchaseFullVersion), keyEquivalent: "")
-            purchaseItem.attributedTitle = NSAttributedString(string: "Purchase Full Version",
-                                                           attributes: [NSAttributedString.Key.font: NSFont.boldSystemFont(ofSize: 13)])
-            statusMenu.addItem(purchaseItem)
-        }
-        
-        statusMenu.addItem(NSMenuItem.separator())
+        // Trial/purchase header is added by menuWillOpen just before display
 
-        // Continue with your existing menu items...
         let injectItem = NSMenuItem(title: "Inject selection to copy buffer", action: #selector(toggleInjectToCopyBuffer), keyEquivalent: "")
         injectItem.state = injectToCopyBuffer ? .on : .off
         statusMenu.addItem(injectItem)
@@ -224,11 +169,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
  
          formatItem.submenu = formatMenu
          statusMenu.addItem(formatItem)
- 
-         // Add the Quit menu item
-         statusMenu.addItem(NSMenuItem.separator()) // Add a separator for better visual separation
 
-        // Add restore purchases option before quit
         statusMenu.addItem(NSMenuItem.separator())
         let restoreItem = NSMenuItem(title: "Restore Purchases", action: #selector(restorePurchases), keyEquivalent: "")
         statusMenu.addItem(restoreItem)
@@ -245,7 +186,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc func restorePurchases() {
-        SKPaymentQueue.default().restoreCompletedTransactions()
+        StoreManager.shared.restorePurchases()
     }
 
     

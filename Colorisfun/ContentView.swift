@@ -1,35 +1,6 @@
 import SwiftUI
 import Cocoa
 
-extension NSColorSampler {
-    static func pickColor(completion: @escaping (NSColor?) -> Void) {
-        // Get reference to the window we want to hide
-        var windowToRestore: NSWindow?
-        if let window = NSApplication.shared.windows.first {
-            windowToRestore = window
-            // Hide the window before starting the color picker
-            window.orderOut(nil)
-        }
-        
-        // Create a new background thread to handle color picking
-        DispatchQueue.global(qos: .userInitiated).async {
-            let sampler = NSColorSampler()
-            
-            // Call back to the main thread when color is picked
-            sampler.show { color in
-                DispatchQueue.main.async {
-                    // Restore the window
-                    if let window = windowToRestore {
-                        window.makeKeyAndOrderFront(nil)
-                    }
-                    
-                    completion(color)
-                }
-            }
-        }
-    }
-}
-
 struct ContentView: View {
     @State private var selectedColor: NSColor = .clear
     @State private var hexValue: String = "#000000"
@@ -80,6 +51,7 @@ struct ContentView: View {
                     Label("Pick Color", image: "starlogo-white") // Replace systemImage
                         .frame(maxWidth: .infinity)
                         .padding(8)
+                        .contentShape(Rectangle()) // make the whole button area clickable, not just the text
                 }
                 .buttonStyle(PlainButtonStyle())
                 .background(Color.accentColor)
@@ -134,40 +106,6 @@ struct ContentView: View {
         }
     }
 
-    /*
-    func startColorPicking() {
-        isPicking = true
-        
-        if let window = NSApplication.shared.windows.first {
-            // Move the window off-screen
-            let originalFrame = window.frame
-            window.setFrameOrigin(NSPoint(x: -window.frame.width, y: -window.frame.height))
-            window.orderOut(nil)
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                let colorSampler = NSColorSampler()
-                colorSampler.show { color in
-                    if let window = NSApplication.shared.windows.first {
-                        // Move the window back to its original position
-                        window.setFrame(originalFrame, display: true)
-                        window.makeKeyAndOrderFront(nil)
-                    }
-
-                    isPicking = false
-
-                    guard let color = color else { return }
-                    selectedColor = color
-
-                    updateColorValues(color: color)
-                    copyToBufferIfEnabled()
-                    showPopoverTemporarily = true
-                }
-            }
-        }
-    }
-    */
-    
-    // In your ContentView struct:
     func startColorPicking() {
         // Use the manager to handle everything
         colorPickerManager.pickColor { newColor in
@@ -329,12 +267,8 @@ struct ColorInfoRow: View {
             Spacer()
             
             Button(action: {
-                if (copyBufferViewModel.getCopyBufferFormat().lowercased() == label.lowercased()) {
-                    copyBufferViewModel.copyToClipboard(value: value)
-                }
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(value, forType: .string)
-                
+                copyBufferViewModel.copyToClipboard(value: value)
+
                 // Post notification for copy event
                 NotificationCenter.default.post(
                     name: Notification.Name("ColorValueCopied"),
